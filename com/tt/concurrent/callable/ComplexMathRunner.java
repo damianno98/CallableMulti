@@ -2,10 +2,7 @@ package com.tt.concurrent.callable;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * 1. Stwórz pulę wątków
@@ -21,7 +18,8 @@ import java.util.concurrent.Future;
  * 
  */
 public class ComplexMathRunner {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ExecutionException, InterruptedException {
+		//Wersja podstawowa
 		int numberOfThreads = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
 		System.out.println("Program with 1 thread start...");
@@ -31,14 +29,22 @@ public class ComplexMathRunner {
 		long endTime = System.currentTimeMillis();
 		System.out.println("Execution time: " + ((endTime - startTime) / 1000d) + " seconds.");
 
+		//Wersja wielowątkowa
+		System.out.println("Program with " + numberOfThreads + " threads start...");
+		startTime = System.currentTimeMillis();
 		final List<Future<Double>> futureList = new LinkedList<>();
 		for(int i = 0; i < numberOfThreads; i++){
 			ComplexMathCallable callable = new ComplexMathCallable(cm, i, numberOfThreads);
 			futureList.add(executor.submit(callable));
-
 		}
 		executor.shutdown();
-
+		Double sum = 0.0;
+		for(Future f : futureList){
+			sum += (Double)f.get();
+		}
+		System.out.println(sum);
+		endTime = System.currentTimeMillis();
+		System.out.println("Execution time: " + ((endTime - startTime) / 1000d) + " seconds.");
 
 
 	}
